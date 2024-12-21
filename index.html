@@ -1,303 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BorbCoin</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    .animate-bounce {
-      animation: bounce 0.5s infinite;
-    }
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-    #gameCanvas {
-      background-color: #70c5ce;
-      display: block;
-      margin: 0 auto;
-      border-radius: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Game App</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --secondary: #7c4dff;
+            --background: #1a1f35;
+            --card: #242942;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --premium: #ffd700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--background);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 390px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .level-badge {
+            background: var(--primary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        /* Stats Styles */
+        .stats {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .coin-display {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 16px 0;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Tasks Styles */
+        .tasks {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+
+        .task-section {
+            margin-bottom: 20px;
+        }
+
+        .task-section-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #8f9bbd;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .reward-badge {
+            background: var(--secondary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        /* Store Styles */
+        .store-section {
+            margin-top: 24px;
+        }
+
+        .store-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .store-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .store-tab.active {
+            background: var(--primary);
+        }
+
+        .store-items {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .store-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .store-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .store-item.premium {
+            border: 2px solid var(--premium);
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+        }
+
+        /* Invite System Styles */
+        .invite-section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+
+        .invite-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .invite-code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .invite-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 4px 0;
+        }
+
+        .invite-types {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .invite-type {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .invite-type.premium {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+            border: 1px solid var(--premium);
+        }
+
+        .premium-badge {
+            background: var(--premium);
+            color: black;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        /* Navigation Styles */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 480px) {
+            .store-items {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-container {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-b from-purple-900 to-blue-900 p-4">
-  <div class="flex flex-col items-center mb-6">
-    <div class="w-24 h-24 bg-yellow-400 rounded-full mb-4 relative overflow-hidden">
-      <div class="absolute inset-0 flex items-center justify-center text-4xl">
-        🐥
-      </div>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="user-info">
+                <span>💎 115</span>
+                <span class="level-badge">Level 4</span>
+            </div>
+            <button class="btn">Settings</button>
+        </div>
+
+        <!-- Main Content -->
+        <div id="earnSection" class="content-section active">
+            <!-- Stats -->
+            <div class="stats">
+                <div>Earning Rate: 200/hour</div>
+                <div class="coin-display">💰 100,390</div>
+                <div>Active Bonus: 2x Multiplier</div>
+            </div>
+
+            <!-- Tasks -->
+            <div class="tasks">
+                <div class="task-section">
+                    <h3 class="task-section-title">Daily Check-in</h3>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="task-icon">📅</div>
+                            <span>Day 1/7</span>
+                        </div>
+                        <button class="btn">Claim +100 💎</button>
+                    </div>
+                </div>
+
+                <div class="task-section">
+                    <h3 class="task-section-title">Social Tasks</h3>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="task-icon">📱</div>
+                            <span>Join Telegram</span>
+                        </div>
+                        <button class="btn">+500 💎</button>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="task-icon">📱</div>
+                            <span>Premium Telegram</span>
+                        </div>
+                        <button class="btn">+1000 💎</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Store Section -->
+        <div id="storeSection" class="content-section">
+            <div class="store-section">
+                <div class="store-tabs">
+                    <div class="store-tab active">Buy Coins</div>
+                    <div class="store-tab">Premium</div>
+                </div>
+
+                <div class="store-items">
+                    <div class="store-item">
+                        <div class="item-icon">💎</div>
+                        <div class="item-amount">1,000 Coins</div>
+                        <div class="item-price">$0.99</div>
+                    </div>
+
+                    <div class="store-item">
+                        <div class="item-icon">💎</div>
+                        <div class="item-amount">5,000 Coins</div>
+                        <div class="item-price">$4.99</div>
+                    </div>
+
+                    <div class="store-item premium">
+                        <span class="premium-badge">PREMIUM</span>
+                        <div class="item-icon">👑</div>
+                        <div class="item-amount">Weekly Pass</div>
+                        <div>2x Earning Rate</div>
+                        <div class="item-price">$4.99</div>
+                    </div>
+
+                    <div class="store-item premium">
+                        <span class="premium-badge">PREMIUM</span>
+                        <div class="item-icon">👑✨</div>
+                        <div class="item-amount">Monthly Pass</div>
+                        <div>3x Earning Rate</div>
+                        <div class="item-price">$14.99</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invite Section -->
+        <div id="inviteSection" class="content-section">
+            <div class="invite-section">
+                <div class="invite-header">
+                    <h3>Invite Friends</h3>
+                    <div class="invite-code">
+                        <span>CODE: PLAY123</span>
+                        <button class="copy-btn">Copy</button>
+                    </div>
+                </div>
+
+                <div class="invite-stats">
+                    <div class="stat-box">
+                        <div>Total Invites</div>
+                        <div class="stat-value">12</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>Coins Earned</div>
+                        <div class="stat-value">6,000 💎</div>
+                    </div>
+                </div>
+
+                <div class="invite-types">
+                    <div class="invite-type">
+                        <div class="invite-info">
+                            <div class="task-info">
+                                <div class="task-icon">👥</div>
+                                <span>Regular Invite</span>
+                            </div>
+                            <div class="invite-reward">+500 💎 per invite</div>
+                        </div>
+                        <button class="btn">Share</button>
+                    </div>
+
+                    <div class="invite-type premium">
+                        <div class="invite-info">
+                            <div class="task-info">
+                                <div class="task-icon">✨</div>
+                                <span>Premium Telegram</span>
+                            </div>
+                            <div class="invite-reward">+1,000 💎 per invite</div>
+                        </div>
+                        <button class="btn">Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a class="nav-item active" onclick="showSection('earnSection')">Earn</a>
+            <a class="nav-item" onclick="showSection('storeSection')">Store</a>
+            <a class="nav-item" onclick="showSection('inviteSection')">Invite</a>
+            <a class="nav-item">Profile</a>
+        </nav>
     </div>
-    <h1 class="text-3xl font-bold text-white mb-2">Borb Coin</h1>
-    <div class="text-xl text-white" id="borbBalance">0.000 BORB</div>
-  </div>
 
-  <div id="miningStation" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
-    <h2 class="text-xl font-bold">Mining Station</h2>
-    <div class="flex flex-col items-center gap-4">
-      <div class="w-full bg-gray-700 rounded-full h-4">
-        <div id="energyBar" class="bg-blue-500 rounded-full h-4 transition-all duration-300" style="width: 100%"></div>
-      </div>
-      <div class="flex items-center gap-2">
-        ⚡ Energy: <span id="energyLevel">100%</span>
-      </div>
-      <button id="mineButton" class="w-32 h-32 rounded-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center text-4xl">
-        ⛏️
-      </button>
-      <div class="text-center">
-        <p class="text-xl font-bold" id="miningPower">Mining Power: 1x</p>
-        <p class="text-sm text-blue-200">Bonus Multiplier: 1x</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Store Section -->
-  <div id="store" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
-    <h2 class="text-xl font-bold">Store</h2>
-    <div id="storeItems">
-      <!-- Store Items will be listed here -->
-    </div>
-  </div>
-
-  <!-- Tasks Section -->
-  <div id="tasks" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
-    <h2 class="text-xl font-bold">Daily Tasks</h2>
-    <div id="taskList">
-      <!-- Tasks will be listed here -->
-    </div>
-  </div>
-
-  <!-- Game Section -->
-  <div id="gameSection" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
-    <h2 class="text-xl font-bold">Flappy Borb Game</h2>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div class="flex justify-center mt-4">
-      <button onclick="startGame()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded">Start Game</button>
-    </div>
-  </div>
-
-  <!-- Footer Tabs -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-lg p-4">
-    <div class="flex justify-around">
-      <button id="mineTab" class="p-2 rounded bg-blue-500">⛏️</button>
-      <button id="storeTab" class="p-2 rounded">🛒</button>
-      <button id="tasksTab" class="p-2 rounded">📜</button>
-      <button id="gameTab" class="p-2 rounded">🎮</button>
-    </div>
-  </div>
-
-  <script>
-    let borbBalance = 0;
-    let energyLevel = 100;
-    let miningPower = 1;
-    let bonusMultiplier = 1;
-    let tasks = [
-      { id: 1, text: 'Mine 10 times', required: 10, progress: 0, reward: 1 },
-      { id: 2, text: 'Play flying game', required: 1, progress: 0, reward: 0.5 },
-      { id: 3, text: 'Reach mining power 3', required: 3, progress: 0, reward: 2 },
-      { id: 4, text: 'Join group', required: 1, progress: 0, reward: 1 }
-    ];
-    const storeItems = [
-      { id: 1, name: 'Energy Boost', cost: 5, effect: 'Instant 50% energy' },
-      { id: 2, name: 'Auto Miner', cost: 10, effect: 'Mines automatically for 1 minute' },
-      { id: 3, name: 'Double Power', cost: 15, effect: '2x mining power for 2 minutes' }
-    ];
-
-    // Update Borb balance
-    function updateBorbBalance(amount) {
-      borbBalance += amount;
-      document.getElementById('borbBalance').textContent = borbBalance.toFixed(3) + ' BORB';
-    }
-
-    // Update tasks progress
-    function updateTask(taskId) {
-      tasks = tasks.map(task => {
-        if (task.id === taskId) {
-          task.progress++;
-          if (task.progress === task.required) {
-            updateBorbBalance(task.reward);
-          }
-        }
-        return task;
-      });
-      renderTasks();
-    }
-
-    // Energy regeneration
-    setInterval(() => {
-      if (energyLevel < 100) {
-        energyLevel++;
-        document.getElementById('energyLevel').textContent = energyLevel + '%';
-        document.getElementById('energyBar').style.width = energyLevel + '%';
-      }
-    }, 3000);
-
-    // Handle mining action
-    document.getElementById('mineButton').addEventListener('click', () => {
-      if (energyLevel < 10) return;
-
-      energyLevel -= 10;
-      document.getElementById('energyLevel').textContent = energyLevel + '%';
-      document.getElementById('energyBar').style.width = energyLevel + '%';
-
-      const earnedAmount = 0.01 * miningPower * bonusMultiplier;
-      updateBorbBalance(earnedAmount);
-      updateTask(1);
-    });
-
-    // Render store items
-    function renderStoreItems() {
-      const storeContainer = document.getElementById('storeItems');
-      storeContainer.innerHTML = '';
-      storeItems.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.classList.add('p-4', 'bg-white/5', 'rounded-lg', 'flex', 'justify-between');
-        itemElement.innerHTML = `
-          <div>
-            <h3 class="font-bold">${item.name}</h3>
-            <p class="text-sm text-blue-200">${item.effect}</p>
-          </div>
-          <button class="px-4 py-2 rounded ${borbBalance >= item.cost ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-600'}"
-            onclick="purchaseItem(${item.id})" ${borbBalance < item.cost ? 'disabled' : ''}>
-            ${item.cost} BORB
-          </button>
-        `;
-        storeContainer.appendChild(itemElement);
-      });
-    }
-
-    // Purchase an item
-    function purchaseItem(itemId) {
-      const item = storeItems.find(i => i.id === itemId);
-      if (borbBalance >= item.cost) {
-        borbBalance -= item.cost;
-        updateBorbBalance(0); // Update UI with new balance
-        if (item.id === 1) {
-          energyLevel = Math.min(100, energyLevel + 50);
-          document.getElementById('energyLevel').textContent = energyLevel + '%';
-          document.getElementById('energyBar').style.width = energyLevel + '%';
-        } else if (item.id === 2) {
-          // Auto miner logic goes here
-        } else if (item.id === 3) {
-          miningPower *= 2;
-          document.getElementById('miningPower').textContent = `Mining Power: ${miningPower}x`;
-          setTimeout(() => {
-            miningPower /= 2;
-            document.getElementById('miningPower').textContent = `Mining Power: ${miningPower}x`;
-          }, 120000); // Power lasts for 2 minutes
-        }
-      }
-    }
-
-    // Render task list
-    function renderTasks() {
-      const taskList = document.getElementById('taskList');
-      taskList.innerHTML = '';
-      tasks.forEach(task => {
-        const taskElement = document.createElement('div');
-        taskElement.classList.add('p-4', 'bg-white/5', 'rounded-lg');
-        taskElement.innerHTML = `
-          <div class="flex justify-between mb-2">
-            <span>${task.text}</span>
-            <span>${task.reward} BORB</span>
-          </div>
-          <div class="w-full bg-gray-700 rounded-full h-2">
-            <div class="bg-green-500 rounded-full h-2" style="width: ${(task.progress / task.required) * 100}%"></div>
-          </div>
-          <div class="text-right text-sm mt-1">
-            ${task.progress}/${task.required}
-          </div>
-        `;
-        taskList.appendChild(taskElement);
-      });
-    }
-
-    // Flappy Bird Game Code
-    let canvas, ctx, bird, pipes, gravity, gameOver, score, jumpPower;
-
-    function startGame() {
-      canvas = document.getElementById("gameCanvas");
-      ctx = canvas.getContext("2d");
-      bird = { x: 50, y: 150, width: 20, height: 20, speed: 0 };
-      pipes = [];
-      gravity = 0.5;
-      jumpPower = -10;
-      gameOver = false;
-      score = 0;
-
-      document.addEventListener("keydown", function (e) {
-        if (e.keyCode === 32 && !gameOver) { // Spacebar to jump
-          bird.speed = jumpPower;
-        }
-      });
-
-      function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        bird.speed += gravity;
-        bird.y += bird.speed;
-
-        if (bird.y + bird.height > canvas.height) {
-          gameOver = true;
+    <script>
+        // Navigation functionality
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
         }
 
-        if (bird.y < 0) {
-          bird.y = 0;
-        }
-
-        if (!gameOver) {
-          if (Math.random() < 0.02) {
-            let pipeHeight = Math.floor(Math.random() * (canvas.height / 2));
-            pipes.push({ x: canvas.width, y: pipeHeight });
-          }
-
-          for (let i = 0; i < pipes.length; i++) {
-            pipes[i].x -= 3;
-            ctx.fillStyle = "green";
-            ctx.fillRect(pipes[i].x, 0, 20, pipes[i].y);
-            ctx.fillRect(pipes[i].x, pipes[i].y + 100, 20, canvas.height);
-
-            if (pipes[i].x + 20 < 0) {
-              pipes.splice(i, 1);
-              score++;
-              updateTask(2); // Play flying game task
-              i--;
-            }
-
-            // Collision check
-            if (bird.x + bird.width > pipes[i].x && bird.x < pipes[i].x + 20 &&
-                (bird.y < pipes[i].y || bird.y + bird.height > pipes[i].y + 100)) {
-              gameOver = true;
-            }
-          }
-
-          ctx.fillStyle = "yellow";
-          ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
-
-          ctx.fillStyle = "black";
-          ctx.font = "20px Arial";
-          ctx.fillText("Score: " + score, 10, 30);
-        } else {
-          ctx.fillText("Game Over! Press R to Restart", canvas.width / 4, canvas.height / 2);
-          document.addEventListener("keydown", function (e) {
-            if (e.keyCode === 82) { // R key to restart
-              startGame();
-            }
-          });
-        }
-
-        requestAnimationFrame(gameLoop);
-      }
-
-      gameLoop();
-    }
-
-    renderStoreItems();
-    renderTasks();
-  </script>
-</body>
-</html>
+        // Copy invite code functionality
+        document.querySelector('.copy-btn').addEventListener('click', function() {
+            navigator.clipboar

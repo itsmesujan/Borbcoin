@@ -17,6 +17,12 @@
         transform: translateY(-10px);
       }
     }
+    #gameCanvas {
+      background-color: #70c5ce;
+      display: block;
+      margin: 0 auto;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-b from-purple-900 to-blue-900 p-4">
@@ -49,6 +55,7 @@
     </div>
   </div>
 
+  <!-- Store Section -->
   <div id="store" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
     <h2 class="text-xl font-bold">Store</h2>
     <div id="storeItems">
@@ -56,6 +63,7 @@
     </div>
   </div>
 
+  <!-- Tasks Section -->
   <div id="tasks" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
     <h2 class="text-xl font-bold">Daily Tasks</h2>
     <div id="taskList">
@@ -63,6 +71,16 @@
     </div>
   </div>
 
+  <!-- Game Section -->
+  <div id="gameSection" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-xl font-bold">Flappy Borb Game</h2>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div class="flex justify-center mt-4">
+      <button onclick="startGame()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded">Start Game</button>
+    </div>
+  </div>
+
+  <!-- Footer Tabs -->
   <div class="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-lg p-4">
     <div class="flex justify-around">
       <button id="mineTab" class="p-2 rounded bg-blue-500">⛏️</button>
@@ -80,7 +98,8 @@
     let tasks = [
       { id: 1, text: 'Mine 10 times', required: 10, progress: 0, reward: 1 },
       { id: 2, text: 'Play flying game', required: 1, progress: 0, reward: 0.5 },
-      { id: 3, text: 'Reach mining power 3', required: 3, progress: 0, reward: 2 }
+      { id: 3, text: 'Reach mining power 3', required: 3, progress: 0, reward: 2 },
+      { id: 4, text: 'Join group', required: 1, progress: 0, reward: 1 }
     ];
     const storeItems = [
       { id: 1, name: 'Energy Boost', cost: 5, effect: 'Instant 50% energy' },
@@ -197,7 +216,86 @@
       });
     }
 
-    // Initialize app
+    // Flappy Bird Game Code
+    let canvas, ctx, bird, pipes, gravity, gameOver, score, jumpPower;
+
+    function startGame() {
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
+      bird = { x: 50, y: 150, width: 20, height: 20, speed: 0 };
+      pipes = [];
+      gravity = 0.5;
+      jumpPower = -10;
+      gameOver = false;
+      score = 0;
+
+      document.addEventListener("keydown", function (e) {
+        if (e.keyCode === 32 && !gameOver) { // Spacebar to jump
+          bird.speed = jumpPower;
+        }
+      });
+
+      function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        bird.speed += gravity;
+        bird.y += bird.speed;
+
+        if (bird.y + bird.height > canvas.height) {
+          gameOver = true;
+        }
+
+        if (bird.y < 0) {
+          bird.y = 0;
+        }
+
+        if (!gameOver) {
+          if (Math.random() < 0.02) {
+            let pipeHeight = Math.floor(Math.random() * (canvas.height / 2));
+            pipes.push({ x: canvas.width, y: pipeHeight });
+          }
+
+          for (let i = 0; i < pipes.length; i++) {
+            pipes[i].x -= 3;
+            ctx.fillStyle = "green";
+            ctx.fillRect(pipes[i].x, 0, 20, pipes[i].y);
+            ctx.fillRect(pipes[i].x, pipes[i].y + 100, 20, canvas.height);
+
+            if (pipes[i].x + 20 < 0) {
+              pipes.splice(i, 1);
+              score++;
+              updateTask(2); // Play flying game task
+              i--;
+            }
+
+            // Collision check
+            if (bird.x + bird.width > pipes[i].x && bird.x < pipes[i].x + 20 &&
+                (bird.y < pipes[i].y || bird.y + bird.height > pipes[i].y + 100)) {
+              gameOver = true;
+            }
+          }
+
+          ctx.fillStyle = "yellow";
+          ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+
+          ctx.fillStyle = "black";
+          ctx.font = "20px Arial";
+          ctx.fillText("Score: " + score, 10, 30);
+        } else {
+          ctx.fillText("Game Over! Press R to Restart", canvas.width / 4, canvas.height / 2);
+          document.addEventListener("keydown", function (e) {
+            if (e.keyCode === 82) { // R key to restart
+              startGame();
+            }
+          });
+        }
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      gameLoop();
+    }
+
     renderStoreItems();
     renderTasks();
   </script>

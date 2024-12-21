@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BorbCoin</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .animate-bounce {
+      animation: bounce 0.5s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-purple-900 to-blue-900 p-4">
+  <div class="flex flex-col items-center mb-6">
+    <div class="w-24 h-24 bg-yellow-400 rounded-full mb-4 relative overflow-hidden">
+      <div class="absolute inset-0 flex items-center justify-center text-4xl">
+        🐥
+      </div>
+    </div>
+    <h1 class="text-3xl font-bold text-white mb-2">Borb Coin</h1>
+    <div class="text-xl text-white" id="borbBalance">0.000 BORB</div>
+  </div>
+
+  <div id="miningStation" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-xl font-bold">Mining Station</h2>
+    <div class="flex flex-col items-center gap-4">
+      <div class="w-full bg-gray-700 rounded-full h-4">
+        <div id="energyBar" class="bg-blue-500 rounded-full h-4 transition-all duration-300" style="width: 100%"></div>
+      </div>
+      <div class="flex items-center gap-2">
+        ⚡ Energy: <span id="energyLevel">100%</span>
+      </div>
+      <button id="mineButton" class="w-32 h-32 rounded-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center text-4xl">
+        ⛏️
+      </button>
+      <div class="text-center">
+        <p class="text-xl font-bold" id="miningPower">Mining Power: 1x</p>
+        <p class="text-sm text-blue-200">Bonus Multiplier: 1x</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="store" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-xl font-bold">Store</h2>
+    <div id="storeItems">
+      <!-- Store Items will be listed here -->
+    </div>
+  </div>
+
+  <div id="tasks" class="bg-white/10 backdrop-blur-lg text-white p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-xl font-bold">Daily Tasks</h2>
+    <div id="taskList">
+      <!-- Tasks will be listed here -->
+    </div>
+  </div>
+
+  <div class="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-lg p-4">
+    <div class="flex justify-around">
+      <button id="mineTab" class="p-2 rounded bg-blue-500">⛏️</button>
+      <button id="storeTab" class="p-2 rounded">🛒</button>
+      <button id="tasksTab" class="p-2 rounded">📜</button>
+      <button id="gameTab" class="p-2 rounded">🎮</button>
+    </div>
+  </div>
+
+  <script>
+    let borbBalance = 0;
+    let energyLevel = 100;
+    let miningPower = 1;
+    let bonusMultiplier = 1;
+    let tasks = [
+      { id: 1, text: 'Mine 10 times', required: 10, progress: 0, reward: 1 },
+      { id: 2, text: 'Play flying game', required: 1, progress: 0, reward: 0.5 },
+      { id: 3, text: 'Reach mining power 3', required: 3, progress: 0, reward: 2 }
+    ];
+    const storeItems = [
+      { id: 1, name: 'Energy Boost', cost: 5, effect: 'Instant 50% energy' },
+      { id: 2, name: 'Auto Miner', cost: 10, effect: 'Mines automatically for 1 minute' },
+      { id: 3, name: 'Double Power', cost: 15, effect: '2x mining power for 2 minutes' }
+    ];
+
+    // Update Borb balance
+    function updateBorbBalance(amount) {
+      borbBalance += amount;
+      document.getElementById('borbBalance').textContent = borbBalance.toFixed(3) + ' BORB';
+    }
+
+    // Update tasks progress
+    function updateTask(taskId) {
+      tasks = tasks.map(task => {
+        if (task.id === taskId) {
+          task.progress++;
+          if (task.progress === task.required) {
+            updateBorbBalance(task.reward);
+          }
+        }
+        return task;
+      });
+      renderTasks();
+    }
+
+    // Energy regeneration
+    setInterval(() => {
+      if (energyLevel < 100) {
+        energyLevel++;
+        document.getElementById('energyLevel').textContent = energyLevel + '%';
+        document.getElementById('energyBar').style.width = energyLevel + '%';
+      }
+    }, 3000);
+
+    // Handle mining action
+    document.getElementById('mineButton').addEventListener('click', () => {
+      if (energyLevel < 10) return;
+
+      energyLevel -= 10;
+      document.getElementById('energyLevel').textContent = energyLevel + '%';
+      document.getElementById('energyBar').style.width = energyLevel + '%';
+
+      const earnedAmount = 0.01 * miningPower * bonusMultiplier;
+      updateBorbBalance(earnedAmount);
+      updateTask(1);
+    });
+
+    // Render store items
+    function renderStoreItems() {
+      const storeContainer = document.getElementById('storeItems');
+      storeContainer.innerHTML = '';
+      storeItems.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('p-4', 'bg-white/5', 'rounded-lg', 'flex', 'justify-between');
+        itemElement.innerHTML = `
+          <div>
+            <h3 class="font-bold">${item.name}</h3>
+            <p class="text-sm text-blue-200">${item.effect}</p>
+          </div>
+          <button class="px-4 py-2 rounded ${borbBalance >= item.cost ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-600'}"
+            onclick="purchaseItem(${item.id})" ${borbBalance < item.cost ? 'disabled' : ''}>
+            ${item.cost} BORB
+          </button>
+        `;
+        storeContainer.appendChild(itemElement);
+      });
+    }
+
+    // Purchase an item
+    function purchaseItem(itemId) {
+      const item = storeItems.find(i => i.id === itemId);
+      if (borbBalance >= item.cost) {
+        borbBalance -= item.cost;
+        updateBorbBalance(0); // Update UI with new balance
+        if (item.id === 1) {
+          energyLevel = Math.min(100, energyLevel + 50);
+          document.getElementById('energyLevel').textContent = energyLevel + '%';
+          document.getElementById('energyBar').style.width = energyLevel + '%';
+        } else if (item.id === 2) {
+          // Auto miner logic goes here
+        } else if (item.id === 3) {
+          miningPower *= 2;
+          document.getElementById('miningPower').textContent = `Mining Power: ${miningPower}x`;
+          setTimeout(() => {
+            miningPower /= 2;
+            document.getElementById('miningPower').textContent = `Mining Power: ${miningPower}x`;
+          }, 120000); // Power lasts for 2 minutes
+        }
+      }
+    }
+
+    // Render task list
+    function renderTasks() {
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+      tasks.forEach(task => {
+        const taskElement = document.createElement('div');
+        taskElement.classList.add('p-4', 'bg-white/5', 'rounded-lg');
+        taskElement.innerHTML = `
+          <div class="flex justify-between mb-2">
+            <span>${task.text}</span>
+            <span>${task.reward} BORB</span>
+          </div>
+          <div class="w-full bg-gray-700 rounded-full h-2">
+            <div class="bg-green-500 rounded-full h-2" style="width: ${(task.progress / task.required) * 100}%"></div>
+          </div>
+          <div class="text-right text-sm mt-1">
+            ${task.progress}/${task.required}
+          </div>
+        `;
+        taskList.appendChild(taskElement);
+      });
+    }
+
+    // Initialize app
+    renderStoreItems();
+    renderTasks();
+  </script>
+</body>
+</html>
